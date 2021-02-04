@@ -81,6 +81,10 @@
             }
         },
 
+        adjustHeight: function (height, cb) {
+            exec(cb, null, 'InAppBrowser', 'adjustHeight', [height, !!cb]);
+        },
+
         insertCSS: function (injectDetails, cb) {
             if (injectDetails.code) {
                 exec(cb, null, 'InAppBrowser', 'injectStyleCode', [injectDetails.code, !!cb]);

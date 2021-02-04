@@ -112,6 +112,7 @@ static CDVWKInAppBrowser* instance = nil;
         } else if ([target isEqualToString:kInAppBrowserTargetSystem]) {
             [self openInSystem:absoluteUrl];
         } else { // _blank or anything else
+            self.CDVBrowserOptions  = [CDVInAppBrowserOptions parseOptions:options];
             [self openInInAppBrowser:absoluteUrl withOptions:options];
         }
         
@@ -307,8 +308,7 @@ static CDVWKInAppBrowser* instance = nil;
                    frame.origin.x = -10000;
                 }
 
-                frame.size.height = frame.size.height - 80.0;
-
+                frame.size.height = frame.size.height - (self->_CDVBrowserOptions.height != nil ? [self->_CDVBrowserOptions.height  doubleValue] : 0);
 
                 strongSelf->tmpWindow = [[UIWindow alloc] initWithFrame:frame];
             }
@@ -431,6 +431,11 @@ static CDVWKInAppBrowser* instance = nil;
             NSLog(@"evaluateJavaScript error : %@ : %@", error.localizedDescription, _script);
         }
     }];
+}
+
+- (void)adjustHeight:(CDVInvokedUrlCommand*)command
+{
+    NSString* height = [command argumentAtIndex:0]
 }
 
 - (void)injectScriptCode:(CDVInvokedUrlCommand*)command

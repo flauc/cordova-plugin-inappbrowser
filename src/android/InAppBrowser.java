@@ -118,7 +118,9 @@ public class InAppBrowser extends CordovaPlugin {
     private static final String BEFORELOAD = "beforeload";
     private static final String FULLSCREEN = "fullscreen";
 
-    private static final List customizableOptions = Arrays.asList(CLOSE_BUTTON_CAPTION, TOOLBAR_COLOR, NAVIGATION_COLOR, CLOSE_BUTTON_COLOR, FOOTER_COLOR);
+    public static final String HEIGHT = "height";
+
+    private static final List customizableOptions = Arrays.asList(CLOSE_BUTTON_CAPTION, TOOLBAR_COLOR, NAVIGATION_COLOR, CLOSE_BUTTON_COLOR, FOOTER_COLOR, HEIGHT);
 
     private InAppBrowserDialog dialog;
     private WebView inAppWebView;
@@ -333,6 +335,29 @@ public class InAppBrowser extends CordovaPlugin {
             PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
             pluginResult.setKeepCallback(true);
             this.callbackContext.sendPluginResult(pluginResult);
+        }
+        else if (action.equals("adjustHeight")) {
+            LOG.d(LOG_TAG, "Adjusting height");
+
+            int IntValue = Integer.parseInt(args.getString(0));
+
+            this.cordova.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (dialog != null && !cordova.getActivity().isFinishing()) {
+                        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+                        DisplayMetrics displayMetrics = new DisplayMetrics();
+                        dialog.getWindow().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+                        lp.copyFrom(dialog.getWindow().getAttributes());
+                        lp.gravity = Gravity.TOP;
+                        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+                        lp.height = displayMetrics.heightPixels - (IntValue != 0 ? (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, IntValue, cordova.getActivity().getResources().getDisplayMetrics()) : 0);
+
+                        dialog.getWindow().setAttributes(lp);
+                    }
+                }
+            });
         }
         else {
             return false;
@@ -1035,8 +1060,8 @@ public class InAppBrowser extends CordovaPlugin {
                 lp.copyFrom(dialog.getWindow().getAttributes());
                 lp.gravity = Gravity.TOP;
                 lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-                int IntValue = (int) (100 * (displayMetrics.ydpi / displayMetrics.densityDpi));
-                lp.height = displayMetrics.heightPixels - this.dpToPixels(IntValue);
+                int IntValue = features.get(HEIGHT) != null ? Integer.parseInt(features.get(HEIGHT)) : 0;
+                lp.height = displayMetrics.heightPixels - (IntValue != 0 ? this.dpToPixels(IntValue) : 0);
 
                 if (dialog != null) {
                     dialog.setContentView(main);
